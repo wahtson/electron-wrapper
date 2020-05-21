@@ -9,6 +9,7 @@ function createWindow () {
     mainWindow = new BrowserWindow({
         width: 920,
         height: 640,
+        icon: __dirname+"/assets/icon.ico",
         webPreferences: {
             nodeIntegration: true,
             preload: path.join(__dirname, 'ui/preload.js')
@@ -44,7 +45,7 @@ const fs = require('fs')
 const p = require('util').promisify
 const toml = require('toml')
 
-const Bot = require('wahtson')
+const Bot = require('../wahtson')
 
 
 const configPath = path.join(__dirname,"config.toml")
@@ -97,6 +98,10 @@ const start = () => {
 }
 
 async function loadConfig(configPath) {
+    if(!fs.existsSync(configPath)) {
+
+    }
+
     const source = await p(fs.readFile)(configPath, 'utf8')
 
     try {
