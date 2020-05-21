@@ -7,7 +7,7 @@ Menu.setApplicationMenu(null)
 let mainWindow
 function createWindow () {
     mainWindow = new BrowserWindow({
-        width: 840,
+        width: 920,
         height: 640,
         webPreferences: {
             nodeIntegration: true,
@@ -23,7 +23,7 @@ function createWindow () {
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()
 
-        bot.start()
+        start()
     })
 }
 
@@ -40,48 +40,68 @@ app.on('window-all-closed', function () {
 })
 
 const chalk = require('chalk')
-const open = require('open')
-const { Wahtson } = require('wahtson')
-let bot = new Wahtson({
-    configPath: path.join(__dirname,"config.toml"),
-    dbPath: path.join(__dirname,"database.sqlite")
+const fs = require('fs')
+const p = require('util').promisify
+const toml = require('toml')
+
+const Bot = require('wahtson')
+
+
+const configPath = path.join(__dirname,"config.toml")
+const dbPath = path.join(__dirname,"database.sqlite")
+
+const bot = new Bot({
+    dbPath,
+    promptInvite: true,
 })
 
-process.title = `WAHtson ${bot.version}`
-
-
-let logLevel = 0
-const eventLevels = { DEBUG: 0, INFO: 1, ACTION: 2, STATUS: 3, WARN: 4, ERROR: 5, FATAL: 6 }
-
-bot.on('ready', async event => {
-    mainWindow.webContents.send("version", bot.version);
-
-    logLevel = await event.get('log_level')
-    const logTypes = Object.keys(eventLevels).filter(l => eventLevels[l] >= logLevel)
-
-    mainWindow.webContents.send("event", { type: "INFO", text: `Logging level ${logLevel}: <span grey>${logTypes.join(', ')}</span>`})
+bot.on('log', ({ level, text }) => {
+    mainWindow.webContents.send("log", { level, text })
 })
 
-let prevEvent = {}
-bot.on('event', event => {
-    if (eventLevels[event.type] < logLevel) return
+bot.on('action', ({ index, numActions, action, skipped, source, event }) => {
+    mainWindow.webContents.send("action", { index, numActions, action, skipped, source, event })
+})
 
-    if (JSON.stringify(event) == JSON.stringify(prevEvent)) return
-    prevEvent = event
-    setTimeout(() => {
-        if (JSON.stringify(event) != JSON.stringify(prevEvent)) return
-        prevEvent = {}
-    }, 100)
+const start = () => {
+    mainWindow.webContents.send("ready", { text: `Wahtson v${Bot.version}` })
 
-    mainWindow.webContents.send("event", event)
+    loadConfig(configPath)
+        .then(config => {
+            bot.config.reset(config)
+            return bot.start()
+        })
+        .then(() => {
+            let configChangedLast = Date.now()
+            fs.watch(configPath, () => {
+                // Debounce; fs.watch likes to call this multiple times for a single change.
+                if (Date.now() - configChangedLast < 500) {
+                    return
+                }
+                configChangedLast = Date.now()
 
-    if (event.type == 'ERROR') {
-        //process.stdout.write(chalk.red(event.text) + ' ')
+                console.log(chalk.grey('Config file changed, reloading...'))
+                loadConfig(configPath)
+                    .then(config => {
+                        bot.config.reset(config)
+                    })
+                    .catch(err => {
+                        console.error(chalk.red(err))
+                    })
+            })
+        })
+        .catch(err => {
+            console.error(chalk.red(err))
+            process.exit(1)
+        })
+}
 
-        if (event.precaution == 'COPY_EXAMPLE_CONFIG') {
-        }
-        if (event.precaution == 'OPEN_CONFIG') {
-            open(bot.botOptions.configPath, { app: 'notepad', wait: true })
-        }
+async function loadConfig(configPath) {
+    const source = await p(fs.readFile)(configPath, 'utf8')
+
+    try {
+        return toml.parse(source)
+    } catch (err) {
+        throw `Syntax error in config on line ${err.line} column ${err.column}`
     }
-})
+}

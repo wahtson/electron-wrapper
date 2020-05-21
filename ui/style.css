@@ -13,12 +13,11 @@ body {
     font-size: 14px;
     overflow-x: hidden;
 }
-#terminal p {
+#terminal pre {
     margin: 0;
-    display: block;
 }
 
-#terminal pre {
+#terminal pre.actionDetails {
     margin: 0;
     font-size: 12px;
     background-color: #171717;
@@ -41,7 +40,7 @@ body {
 
 #terminal *[big] {
     font-size: 20px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 #terminal *[white] {

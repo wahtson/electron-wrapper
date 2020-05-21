@@ -10,36 +10,48 @@ const addToTerminal = (data) => {
     if(isScrolling) scrollToBottom();
     else document.getElementById("scrollToBottom").removeAttribute("hidden")
 }
+const addToTerminalActionChain = (data) => {
+    let time = Date.now()
 
-ipcRenderer.on("version", function(event, data) {
-    document.title = `WAHtson ${data}`
-    terminal.innerHTML += (`<p big>WAHtson ${data}</p>`)
-})
+    console.log(data)
 
-ipcRenderer.on("event", function (event, data) {
-    if(data.type == "DEBUG")
-        addToTerminal(`<p grey>${data.text}</p>`)
+    let html = `${data.index != 0 ? '<span white> | </span>' : ''}<span ${data.skipped ? 'grey' : 'magenta'} onclick="toggleActionDetails(this)" source="${data.source}" stamp="${time}">${data.index+1}. ${data.action.type}</span>`
 
-    if(data.type == "INFO")
-        addToTerminal(`<p cyan>${data.text}</p>`)
-        
-    if(data.type == "ACTION") {
-        console.log(data.source);
-        addToTerminal(`${data.index != 1 ? '<span white> | </span>' : ''}<span ${data.skipped ? 'grey' : 'magenta'} onclick="toggleActionDetails(this)">${data.index}. ${data.data.type}</span>`)
-        addToTerminal(`<pre class="actionDetails" hidden="true" indent2>${JSON.stringify(data.data, null, 2)}</pre>`)
-    }
+    terminal.querySelector(`pre[messageid="${data.source}"][length="${data.index}"][event="${data.event}"]`).innerHTML += html;
+    terminal.querySelector(`pre[messageid="${data.source}"][length="${data.index}"][event="${data.event}"]`).setAttribute("length", data.index+1)
 
-    if(data.type == "STATUS") 
-        addToTerminal(`<p green>${data.text}</p>`)   
-
-    if(data.type == "WARN")
-        addToTerminal(`<p yellow>${data.text}</p>`)
-        
-    if(data.type == "ERROR")
-        addToTerminal(`<p red>${data.text}</p>`)
+    let detailsHtml = `<pre class="actionDetails" hidden="true" indent2 source="${data.source}" stamp="${time}">Event: ${data.event}<br>${JSON.stringify(data.action, null, 2)}</pre>`
     
-    if(data.type == "FATAL")
-        addToTerminal(`<p red>${data.text}</p>`)
+    terminal.querySelector(`div[messageid="${data.source}"][length="${data.index}"][event="${data.event}"]`).innerHTML += detailsHtml;
+    terminal.querySelector(`div[messageid="${data.source}"][length="${data.index}"][event="${data.event}"]`).setAttribute("length", data.index+1)
+
+    const isScrolling = (window.innerHeight + window.scrollY) >= document.body.offsetHeight
+    if(isScrolling) scrollToBottom();
+    else document.getElementById("scrollToBottom").removeAttribute("hidden")
+}
+
+ipcRenderer.on("ready", function (event, data) {
+    addToTerminal(`<pre big>${data.text}</pre>`)
+    document.title = data.text
+});
+
+ipcRenderer.on("log", function (event, data) {
+
+    if(data.level == "0")
+        addToTerminal(`<pre cyan>${data.text}</pre>`)
+
+    if(data.level == "1")
+        addToTerminal(`<pre yellow>${data.text}</pre>`)
+        
+    if(data.level == "2")
+        addToTerminal(`<pre red>${data.text}</pre>`)
+});
+
+ipcRenderer.on("action", function (event, data) {
+    if(data.index == 0)
+        addToTerminal(`<pre messageid="${data.source}" event="${data.event}" length="0"></pre><div messageid="${data.source}" event="${data.event}" length="0"></div>`)
+
+    addToTerminalActionChain(data)
 });
 
 const scrollToBottom = () => {
@@ -49,7 +61,9 @@ const scrollToBottom = () => {
 
 
 const toggleActionDetails = (elem) => {
-    let isHidden = elem.nextElementSibling.getAttribute("hidden");
+    let details = elem.parentElement.nextElementSibling.children[Number(elem.getAttribute("index"))]
+
+    let isExpanded = elem.getAttribute("expanded");
 
     document.querySelectorAll("pre.actionDetails").forEach(pre => {
         pre.setAttribute("hidden", "true")
@@ -58,9 +72,8 @@ const toggleActionDetails = (elem) => {
         action.removeAttribute("expanded")
     })
 
-    if(isHidden) {
+    if(!isExpanded) {
         elem.setAttribute("expanded", "true")
-        elem.nextElementSibling.removeAttribute("hidden")
+        details.removeAttribute("hidden")
     }
-
 }
