@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background-color: black;
+}
+#terminal {
+    background-color: black;
+    min-height: calc(100vh - 16px);
+    width: calc(100% - 16px);
+    padding: 8px;
+    font-family: monospace;
+    color: white;
+    font-size: 14px;
+    overflow-x: hidden;
+}
+#terminal p {
+    margin: 0;
+    display: block;
+}
+
+#terminal pre {
+    margin: 0;
+    font-size: 12px;
+    background-color: #171717;
+    border-radius: 3px;
+    padding: 6px;
+    margin: 8px;
+    width: fit-content;
+}
+#terminal *[onclick] {
+    cursor: pointer;
+    user-select: none;
+}
+
+#terminal *[indent1] {
+    margin-left: 8px;
+}
+#terminal *[indent2] {
+    margin-left: 16px;
+}
+
+#terminal *[big] {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+#terminal *[white] {
+    color: white;
+}
+#terminal *[magenta] {
+    color: magenta;
+}
+#terminal *[red] {
+    color: red;
+}
+#terminal *[green] {
+    color: lime;
+}
+#terminal *[cyan] {
+    color: cyan;
+}
+#terminal *[grey] {
+    color: grey;
+}
+
+#terminal *[expanded] {
+    background-color: grey;
+    color: black;
+    border-radius: 3px;
+    padding: 3px;
+}
+#terminal *[expanded][magenta] {
+    background-color: magenta;
+}
+
+::selection {
+    background-color: #aaaaaa;
+}
+
+#scrollToBottom {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    font-size: 24px;
+    padding: 4px;
+    width: 40px;
+    text-align: center;
+    border-radius: 32px;
+    border: none;
+    outline: none;
+    background: white;
+    color: black;
+    cursor: pointer;
+}

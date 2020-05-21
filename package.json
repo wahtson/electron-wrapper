@@ -1,0 +1,27 @@
+{
+  "name": "wahtson-electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "lint": "prettier --single-quote --trailing-comma all --no-semi --arrow-parens avoid --print-width 100 --tab-width 4 --write src/**/*.js",
+    "rebuild": "electron-rebuild"
+  },
+  "dependencies": {
+    "electron": "^9.0.0",
+    "open": "^7.0.3",
+    "package": "^1.0.1",
+    "toml": "^3.0.0",
+    "wahtson": "git+https://github.com/nanaian/wahtson.git#api"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.11.0",
+    "prettier": "^2.0.5"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "description": ""
+}
