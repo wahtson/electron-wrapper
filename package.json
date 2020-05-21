@@ -12,7 +12,7 @@
     "open": "^7.0.3",
     "package": "^1.0.1",
     "toml": "^3.0.0",
-    "wahtson": "^2.0.2"
+    "wahtson": "^2.1.0"
   },
   "devDependencies": {
     "electron-rebuild": "^1.11.0",
@@ -22,6 +22,6 @@
     "node": ">=12"
   },
   "author": "",
-  "license": "GPLv3",
+  "license": "GPL-3.0",
   "description": ""
 }
