@@ -45,7 +45,7 @@ const fs = require('fs')
 const p = require('util').promisify
 const toml = require('toml')
 
-const Bot = require('../wahtson')
+const Bot = require('wahtson')
 
 
 const configPath = path.join(__dirname,"config.toml")
