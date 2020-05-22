@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('scrollToBottom').setAttribute('hidden', 'true')
     }
 
-    const toggleActionDetails = elem => {
+    window.toggleActionDetails = elem => {
         let details =
             elem.parentElement.nextElementSibling.children[Number(elem.getAttribute('index'))]
 
