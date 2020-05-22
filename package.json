@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "lint": "prettier --single-quote --trailing-comma all --no-semi --arrow-parens avoid --print-width 100 --tab-width 4 --write src/**/*.js",
+    "start": "electron-forge start",
+    "lint": "prettier --single-quote --trailing-comma all --no-semi --arrow-parens avoid --print-width 100 --tab-width 4 --write main.js ui/**/*.js",
     "rebuild": "electron-rebuild",
-    "build-win": "electron-rebuild && electron-packager . wahtson-electron --overwrite --asar=true --platform=win32 --arch=x64 --icon=assets/icon.ico --prune=true --out=builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Wahtson Electron\" --ignore=\"(.gitignore)|(config.toml)|(database.sqlite)|(builds)\""
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
     "mz": "^2.7.0",
     "open": "^7.0.3",
     "package": "^1.0.1",
@@ -16,15 +18,57 @@
     "wahtson": "^2.1.0"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.51",
+    "@electron-forge/maker-deb": "^6.0.0-beta.51",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.51",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.51",
+    "@electron-forge/maker-zip": "^6.0.0-beta.51",
     "electron": "^9.0.0",
-    "electron-packager": "^14.2.1",
     "electron-rebuild": "^1.11.0",
     "prettier": "^2.0.5"
   },
   "engines": {
     "node": ">=12"
   },
-  "author": "",
+  "author": "Wahtson Electron",
   "license": "GPL-3.0",
-  "description": ""
+  "description": "An electron based UI wrapper for Wahtson",
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "ignore": "(.gitignore)|(config.toml)|(database.sqlite)|(builds)",
+        "icon": "assets/icon.ico",
+        "asar": true,
+        "executable-name": "WahtsonElectron",
+        "win32metadata": {
+          "ProductName": "Wahtson Electron"
+        }
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "WahtsonElectron",
+            "setupIcon": "assets/icon.ico",
+            "loadingGif": "assets/installing.gif",
+            "setupExe": "WahtsonElectron.exe"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  }
 }
