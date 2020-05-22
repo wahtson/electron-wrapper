@@ -1,5 +1,5 @@
-// Modules to control application life and create native browser window
 const {app, BrowserWindow, Menu} = require('electron')
+
 const path = require('path')
 
 Menu.setApplicationMenu(null)
@@ -19,12 +19,13 @@ function createWindow () {
 
     mainWindow.loadFile('ui/index.html')
 
-    //mainWindow.openDevTools();
+    mainWindow.openDevTools();
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()
 
         start()
+        mainWindow.webContents.send("ready", { text: `Wahtson v${Bot.version}` })
     })
 }
 
@@ -40,15 +41,13 @@ app.on('window-all-closed', function () {
     if (process.platform !== 'darwin') app.quit()
 })
 
-const chalk = require('chalk')
-const fs = require('fs')
-const p = require('util').promisify
+const fs = require('mz/fs')
 const toml = require('toml')
 
 const Bot = require('wahtson')
 
 
-const configPath = path.join(__dirname,"config.toml")
+const configPath = path.join(__dirname,"../../../config.toml")
 const dbPath = path.join(__dirname,"database.sqlite")
 
 const bot = new Bot({
@@ -65,8 +64,6 @@ bot.on('action', ({ index, numActions, action, skipped, source, event }) => {
 })
 
 const start = () => {
-    mainWindow.webContents.send("ready", { text: `Wahtson v${Bot.version}` })
-
     loadConfig(configPath)
         .then(config => {
             bot.config.reset(config)
@@ -81,32 +78,37 @@ const start = () => {
                 }
                 configChangedLast = Date.now()
 
-                console.log(chalk.grey('Config file changed, reloading...'))
+                //console.log(chalk.grey('Config file changed, reloading...'))
+                mainWindow.webContents.send("log", { level: -1, text: 'Config file changed, reloading...' })
                 loadConfig(configPath)
                     .then(config => {
                         bot.config.reset(config)
                     })
                     .catch(err => {
-                        console.error(chalk.red(err))
+                        //console.error(chalk.red(err))
+                        mainWindow.webContents.send("log", { level: 2, text: err })
                     })
             })
         })
         .catch(err => {
-            console.error(chalk.red(err))
-            process.exit(1)
+            //console.error(chalk.red(err))
+            mainWindow.webContents.send("log", { level: 2, text: err })
         })
 }
 
 async function loadConfig(configPath) {
-    if(!fs.existsSync(configPath)) {
+    return new Promise(async (resolve, reject) => {
+        if(!(await fs.exists(configPath))) {
+            await fs.copyFile(path.join(__dirname,"node_modules/wahtson/config-example.toml"), configPath)
+        }
+    
+        const source = await fs.readFile(configPath, 'utf8')
 
-    }
-
-    const source = await p(fs.readFile)(configPath, 'utf8')
-
-    try {
-        return toml.parse(source)
-    } catch (err) {
-        throw `Syntax error in config on line ${err.line} column ${err.column}`
-    }
+        try {
+            resolve(toml.parse(source))
+        } catch (err) {
+            reject()
+            mainWindow.webContents.send("log", { level: 2, text: `Syntax error in config on line ${err.line} column ${err.column}` })
+        }
+    })
 }

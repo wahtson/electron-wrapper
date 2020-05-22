@@ -39,8 +39,9 @@ body {
 }
 
 #terminal *[big] {
-    font-size: 20px;
-    font-weight: 600;
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 8px;
 }
 
 #terminal *[white] {
