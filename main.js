@@ -48,7 +48,7 @@ const Bot = require('wahtson')
 
 
 const configPath = path.join(__dirname,"../../../config.toml")
-const dbPath = path.join(__dirname,"database.sqlite")
+const dbPath = path.join(__dirname,"../../../database.sqlite")
 
 const bot = new Bot({
     dbPath,
