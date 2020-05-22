@@ -51,7 +51,7 @@
             "name": "WahtsonElectron",
             "setupIcon": "assets/icon.ico",
             "loadingGif": "assets/installing.gif",
-            "setupExe": "WahtsonElectron.exe"
+            "setupExe": "WahtsonElectron-Installer.exe"
           }
         },
         {
