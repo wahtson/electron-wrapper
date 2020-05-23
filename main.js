@@ -48,8 +48,15 @@ const toml = require('toml')
 
 const Bot = require('wahtson')
 
-const configPath = path.join(process.env.appdata,'wahtson-electron/Local Storage', 'config.toml')
-const dbPath = path.join(process.env.appdata,'wahtson-electron/Local Storage', 'database.sqlite')
+const configUpgrader = require('wahtson-config-upgrader')
+
+const configPath = path.join(process.env.appdata, 'wahtson-electron/Local Storage', 'config.json5')
+const configBackupPath = path.join(
+    process.env.appdata,
+    'wahtson-electron/Local Storage',
+    'config.toml',
+)
+const dbPath = path.join(process.env.appdata, 'wahtson-electron/Local Storage', 'database.sqlite')
 
 const bot = new Bot({
     dbPath,
@@ -65,13 +72,39 @@ bot.on('action', ({ index, numActions, action, skipped, source, event }) => {
 })
 
 const start = () => {
-    loadConfig(configPath)
+    loadConfig(configPath, configBackupPath)
         .then(config => {
             bot.config.reset(config)
             return bot.start()
         })
         .then(() => {
             let configChangedLast = Date.now()
+            let configBackupChangedLast = Date.now()
+            fs.watch(configBackupPath, async () => {
+                // Debounce; fs.watch likes to call this multiple times for a single change.
+                if (Date.now() - configBackupChangedLast < 500) {
+                    return
+                }
+                configBackupChangedLast = Date.now()
+
+                //console.log(chalk.grey('Config file changed, reloading...'))
+                mainWindow.webContents.send('log', {
+                    level: -1,
+                    text:
+                        'The use of <span white>config.toml</span> is deprecated. Please use <span white>config.json5</span> instead',
+                })
+
+                await configUpgrader(configBackupPath, configPath)
+
+                loadConfig(configPath, configBackupPath)
+                    .then(config => {
+                        bot.config.reset(config)
+                    })
+                    .catch(err => {
+                        //console.error(chalk.red(err))
+                        mainWindow.webContents.send('log', { level: 2, text: err })
+                    })
+            })
             fs.watch(configPath, () => {
                 // Debounce; fs.watch likes to call this multiple times for a single change.
                 if (Date.now() - configChangedLast < 500) {
@@ -84,7 +117,7 @@ const start = () => {
                     level: -1,
                     text: 'Config file changed, reloading...',
                 })
-                loadConfig(configPath)
+                loadConfig(configPath, configBackupPath)
                     .then(config => {
                         bot.config.reset(config)
                     })
@@ -100,24 +133,29 @@ const start = () => {
         })
 }
 
-async function loadConfig(configPath) {
+const JSON5 = require('json5')
+async function loadConfig(configPath, configBackupPath) {
     return new Promise(async (resolve, reject) => {
+        let resolvedConfigPath = configPath
         if (!(await fs.exists(configPath))) {
-            await fs.copyFile(
-                path.join(__dirname, 'node_modules/wahtson/config-example.toml'),
-                configPath,
-            )
+            if (!(await fs.exists(configBackupPath))) {
+                await configUpgrader(
+                    path.join(__dirname, 'node_modules/wahtson/config-example.toml'),
+                    configPath,
+                )
+            }
+            await configUpgrader(configBackupPath, configPath)
         }
 
         const source = await fs.readFile(configPath, 'utf8')
 
         try {
-            resolve(toml.parse(source))
+            resolve(JSON5.parse(source))
         } catch (err) {
             reject()
             mainWindow.webContents.send('log', {
                 level: 2,
-                text: `Syntax error in config on line ${err.line} column ${err.column}`,
+                text: `Syntax error in config on line ${err.lineNumber} column ${err.columnNumber}`,
             })
         }
     })
