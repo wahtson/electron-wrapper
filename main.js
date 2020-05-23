@@ -87,6 +87,8 @@ const start = () => {
                 }
                 configBackupChangedLast = Date.now()
 
+                if (!(await fs.exists(configBackupPath))) return
+
                 //console.log(chalk.grey('Config file changed, reloading...'))
                 mainWindow.webContents.send('log', {
                     level: -1,
