@@ -77,36 +77,38 @@ const start = () => {
             bot.config.reset(config)
             return bot.start()
         })
-        .then(() => {
+        .then(async () => {
             let configChangedLast = Date.now()
             let configBackupChangedLast = Date.now()
-            fs.watch(configBackupPath, async () => {
-                // Debounce; fs.watch likes to call this multiple times for a single change.
-                if (Date.now() - configBackupChangedLast < 500) {
-                    return
-                }
-                configBackupChangedLast = Date.now()
+            if (await fs.exists(configBackupPath)) {
+                fs.watch(configBackupPath, async () => {
+                    // Debounce; fs.watch likes to call this multiple times for a single change.
+                    if (Date.now() - configBackupChangedLast < 500) {
+                        return
+                    }
+                    configBackupChangedLast = Date.now()
 
-                if (!(await fs.exists(configBackupPath))) return
+                    if (!(await fs.exists(configBackupPath))) return
 
-                //console.log(chalk.grey('Config file changed, reloading...'))
-                mainWindow.webContents.send('log', {
-                    level: -1,
-                    text:
-                        'The use of <span white>config.toml</span> is deprecated. Please use <span white>config.json5</span> instead',
+                    //console.log(chalk.grey('Config file changed, reloading...'))
+                    mainWindow.webContents.send('log', {
+                        level: -1,
+                        text:
+                            'The use of <span white>config.toml</span> is deprecated. Please use <span white>config.json5</span> instead',
+                    })
+
+                    await configUpgrader(configBackupPath, configPath)
+
+                    loadConfig(configPath, configBackupPath)
+                        .then(config => {
+                            bot.config.reset(config)
+                        })
+                        .catch(err => {
+                            //console.error(chalk.red(err))
+                            mainWindow.webContents.send('log', { level: 2, text: err })
+                        })
                 })
-
-                await configUpgrader(configBackupPath, configPath)
-
-                loadConfig(configPath, configBackupPath)
-                    .then(config => {
-                        bot.config.reset(config)
-                    })
-                    .catch(err => {
-                        //console.error(chalk.red(err))
-                        mainWindow.webContents.send('log', { level: 2, text: err })
-                    })
-            })
+            }
             fs.watch(configPath, () => {
                 // Debounce; fs.watch likes to call this multiple times for a single change.
                 if (Date.now() - configChangedLast < 500) {
