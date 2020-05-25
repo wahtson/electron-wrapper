@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         run: npm install
       - name: Package
-        run: npm run make --if-present
+        run: npm run make --platform "win32" --arch "x64" --if-present
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
