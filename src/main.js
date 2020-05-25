@@ -1,5 +1,6 @@
-const { app, BrowserWindow, Menu, autoUpdater, ipcMain } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain} = require('electron')
 
+const autoUpdater = require('./auto-updater.js')
 if (require('electron-squirrel-startup')) return app.quit()
 
 const isDev = require('electron-is-dev')
@@ -32,27 +33,9 @@ function createWindow() {
 
         start()
         mainWindow.webContents.send('ready', { text: `Wahtson v${Bot.version}` })
-
-        if (isDev) {
-            console.log('Running in development')
-        } else {
-            const server = 'https://wahtson-electron-update.now.sh'
-            const feed = `${server}/update/${process.platform}/${app.getVersion()}`
-
-            autoUpdater.setFeedURL(feed)
-
-            autoUpdater.checkForUpdates()
-            setInterval(() => {
-                autoUpdater.checkForUpdates()
-            }, 60000)
-
-            autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-                mainWindow.webContents.send('update', { name: releaseName, notes: releaseNotes })
-            })
-        }
-        ipcMain.on('quitAndInstallRequest', (event, data) => {
-            autoUpdater.quitAndInstall()
-        })
+    })
+    mainWindow.webContents.on('did-finish-load', () => {
+        autoUpdater.init(mainWindow)
     })
 }
 

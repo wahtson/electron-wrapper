@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         converter = new showdown.Converter()
 
     ipcRenderer.on('update', function (event, data) {
-        document.querySelector('#updateModal > h1').innerText = 'Wahtson Electron v' + data.name
+        document.querySelector('#updateModal > h1').innerText = 'Wahtson Electron ' + data.name
         document.querySelector('#updateModal > div').innerHTML = converter.makeHtml(data.notes)
 
         document.querySelector('#updateButton').removeAttribute('hidden')
