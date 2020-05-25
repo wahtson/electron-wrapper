@@ -1,16 +1,16 @@
-const { ipcRenderer } = require('electron')
-
 const loadDate = Date.now()
 
+const { ipcRenderer } = require('electron')
+
 document.addEventListener('DOMContentLoaded', () => {
-    let terminal = document.getElementById('terminal')
+    let terminal = document.querySelector('#terminal')
     const addToTerminal = data => {
         const isScrolling = window.innerHeight + window.scrollY >= document.body.offsetHeight
 
         terminal.innerHTML += data
 
         if (isScrolling) scrollToBottom()
-        else document.getElementById('scrollToBottom').removeAttribute('hidden')
+        else document.querySelector('#scrollToBottom').removeAttribute('hidden')
     }
     const addToTerminalActionChain = data => {
         let time = Date.now()
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isScrolling = window.innerHeight + window.scrollY >= document.body.offsetHeight
         if (isScrolling) scrollToBottom()
-        else document.getElementById('scrollToBottom').removeAttribute('hidden')
+        else document.querySelector('#scrollToBottom').removeAttribute('hidden')
     }
 
     ipcRenderer.on('ready', function (event, data) {
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const scrollToBottom = () => {
         window.scrollTo(0, terminal.scrollHeight)
-        document.getElementById('scrollToBottom').setAttribute('hidden', 'true')
+        document.querySelector('#scrollToBottom').setAttribute('hidden', 'true')
     }
 
     window.toggleActionDetails = elem => {
@@ -97,5 +97,22 @@ document.addEventListener('DOMContentLoaded', () => {
             elem.setAttribute('expanded', 'true')
             details.removeAttribute('hidden')
         }
+    }
+
+    var showdown = require('showdown'),
+        converter = new showdown.Converter()
+
+    ipcRenderer.on('update', function (event, data) {
+        document.querySelector('#updateModal > h1').innerText = 'Wahtson Electron v' + data.name
+        document.querySelector('#updateModal > div').innerHTML = converter.makeHtml(data.notes)
+
+        document.querySelector('#updateButton').removeAttribute('hidden')
+    })
+
+    window.updateModal = () => {
+        document.querySelector('#updateModal').removeAttribute('hidden')
+    }
+    window.quitAndInstall = () => {
+        ipcRenderer.send('quitAndInstallRequest')
     }
 })

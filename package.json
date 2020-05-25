@@ -1,6 +1,6 @@
 {
   "name": "wahtson-electron",
-  "version": "1.1.0-alpha.3",
+  "version": "1.1.0",
   "main": "main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -10,11 +10,13 @@
     "make": "electron-forge make"
   },
   "dependencies": {
+    "electron-is-dev": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
     "json5": "^2.1.3",
     "mz": "^2.7.0",
     "open": "^7.0.3",
     "package": "^1.0.1",
+    "showdown": "^1.9.1",
     "toml": "^3.0.0",
     "wahtson": "2.1.0",
     "wahtson-config-upgrader": "^1.0.4"

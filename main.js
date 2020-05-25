@@ -1,6 +1,8 @@
-const { app, BrowserWindow, Menu } = require('electron')
+const { app, BrowserWindow, Menu, autoUpdater, ipcMain } = require('electron')
 
 if (require('electron-squirrel-startup')) return app.quit()
+
+const isDev = require('electron-is-dev')
 
 const path = require('path')
 
@@ -21,13 +23,36 @@ function createWindow() {
 
     mainWindow.loadFile('ui/index.html')
 
-    //mainWindow.openDevTools();
+    if (isDev) {
+        mainWindow.openDevTools()
+    }
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()
 
         start()
         mainWindow.webContents.send('ready', { text: `Wahtson v${Bot.version}` })
+
+        if (isDev) {
+            console.log('Running in development')
+        } else {
+            const server = 'https://wahtson-electron-update.now.sh'
+            const feed = `${server}/update/${process.platform}/${app.getVersion()}`
+
+            autoUpdater.setFeedURL(feed)
+
+            autoUpdater.checkForUpdates()
+            setInterval(() => {
+                autoUpdater.checkForUpdates()
+            }, 60000)
+
+            autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+                mainWindow.webContents.send('update', { name: releaseName, notes: releaseNotes })
+            })
+        }
+        ipcMain.on('quitAndInstallRequest', (event, data) => {
+            autoUpdater.quitAndInstall()
+        })
     })
 }
 
@@ -91,11 +116,12 @@ const start = () => {
                     if (!(await fs.exists(configBackupPath))) return
 
                     //console.log(chalk.grey('Config file changed, reloading...'))
-                    mainWindow.webContents.send('log', {
-                        level: -1,
-                        text:
-                            'The use of <span white>config.toml</span> is deprecated. Please use <span white>config.json5</span> instead',
-                    })
+
+                    //mainWindow.webContents.send('log', {
+                    //    level: -1,
+                    //    text:
+                    //        'The use of <span white>config.toml</span> is deprecated. Please use <span white>config.json5</span> instead',
+                    //})
 
                     await configUpgrader(configBackupPath, configPath)
 
