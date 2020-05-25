@@ -8,6 +8,7 @@
     "rebuild": "electron-rebuild",
     "package": "electron-forge package",
     "make": "electron-forge make",
+    "make:all": "npm run make:win && npm run make:mac",
     "make:win": "electron-forge make --platform \"win32\"",
     "make:mac": "electron-forge make --platform \"darwin\""
   },
@@ -56,8 +57,7 @@
           "config": {
             "name": "WahtsonElectron",
             "setupIcon": "assets/icon.ico",
-            "loadingGif": "assets/installing.gif",
-            "setupExe": "WahtsonElectron-Installer.exe"
+            "loadingGif": "assets/installing.gif"
           }
         },
         {
