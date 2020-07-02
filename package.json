@@ -45,7 +45,7 @@
     "forge": {
       "packagerConfig": {
         "ignore": "(.gitignore)|(config.toml)|(database.sqlite)|(out)",
-        "icon": "/assets/icon.ico",
+        "icon": "./assets/icon.ico",
         "asar": true,
         "executable-name": "WahtsonElectron",
         "win32metadata": {
@@ -57,8 +57,9 @@
           "name": "@electron-forge/maker-squirrel",
           "config": {
             "name": "WahtsonElectron",
-            "setupIcon": "/assets/icon.ico",
-            "loadingGif": "/assets/installing.gif"
+            "iconUrl": "https://raw.githubusercontent.com/wahtson/assets/master/icon.ico",
+            "setupIcon": "./assets/icon.ico",
+            "loadingGif": "./assets/installing.gif"
           }
         },
         {
