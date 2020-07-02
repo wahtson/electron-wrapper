@@ -35,7 +35,7 @@ function createWindow() {
         mainWindow.webContents.send('ready', { text: `Wahtson v${Bot.version}` })
     })
     mainWindow.webContents.on('did-finish-load', () => {
-        autoUpdater.init(mainWindow)
+        if(!isDev) autoUpdater.init(mainWindow)
     })
 }
 
