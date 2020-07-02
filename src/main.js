@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Menu, ipcMain} = require('electron')
 
 const autoUpdater = require('./auto-updater.js')
-if (require('electron-squirrel-startup')) return app.quit()
+if (require('electron-squirrel-startup')) app.quit()
 
 const isDev = require('electron-is-dev')
 
@@ -14,10 +14,10 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 920,
         height: 640,
-        icon: __dirname + '/assets/icon.ico',
+        icon: __dirname + '/../assets/icon.ico',
         webPreferences: {
             nodeIntegration: true,
-            preload: path.join(__dirname, 'ui/preload.js'),
+            preload: path.join(__dirname, '/../ui/preload.js'),
         },
         show: false,
     })

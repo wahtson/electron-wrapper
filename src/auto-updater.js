@@ -3,6 +3,8 @@ const os = require('os')
 const autoUpdater = electron.autoUpdater
 const appVersion = require('../package.json').version
 
+const isDev = require('electron-is-dev')
+
 let updateFeed = ''
 let initialized = false
 const platform = `${os.platform()}_${os.arch()}`
@@ -15,6 +17,7 @@ if (os.platform() === 'darwin') {
 }
 
 function init(mainWindow) {
+  if(isDev) return
   mainWindow.webContents.send('console', `App version: ${appVersion}`)
   mainWindow.webContents.send('message', { msg: `🖥 App version: ${appVersion}` })
 
